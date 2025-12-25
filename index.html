@@ -288,11 +288,8 @@
       <section id="screenEnd" style="display:none;">
         <div class="center">
           <div class="bigName" style="font-size:24px;">Færdig</div>
-          <div class="subtle">Enheden skal leveres tilbage til hosten.</div>
+          <div class="subtle"></div>
 
-          <div class="box" style="margin-top:12px;">
-            Aflever telefonen til hosten nu.
-          </div>
 
           <div class="row" style="justify-content:center; margin-top:12px;">
             <button class="primary tight" id="playAgainBtn">Start forfra (behold spillere)</button>
@@ -516,7 +513,7 @@
       }
 
       showScreen("screenTurn");
-      notice("turnNotice", "Tænk på dit svar. Når du er færdig, tryk “Næste spiller”.");
+      notice("turnNotice",);
     }
 
     function nextPlayer(){
@@ -530,7 +527,7 @@
 
       renderPassScreen();
       showScreen("screenPass");
-      notice("passNotice", "Giv telefonen videre. Næste spiller trykker “Vis mit spørgsmål”.");
+      notice("passNotice",);
     }
 
     function playAgainKeepPlayers(){
@@ -625,3 +622,4 @@
   </script>
 </body>
 </html>
+
