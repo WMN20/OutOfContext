@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="manifest" href="manifest.webmanifest">
+
+
+  <title>Out Of Context</title>
+
+  <!-- iOS: gør den “app-agtig” ved Add to Home Screen -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Out Of Context">
+
+  <!-- Android/Chrome: “app-agtig” -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+
+  <style>
+    :root{
+      --bg:#000000;
+      --card:#1a1a1a;
+      --line: rgba(255,255,255,.10);
+      --text:#f2f4f8;
+      --muted: rgba(255,255,255,.70);
+      --muter: rgba(255,255,255,.55);
+      --btn2:#1f2633;
+      --accent:#6aa8ff;
+      --danger:#ff6a6a;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:14px;
+      padding-top: calc(14px + env(safe-area-inset-top));
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .app{ width:min(720px, 100%); }
+    .card{
+      background: var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .title{ font-weight:900; letter-spacing:.2px; }
+    .pill{
+      font-size:12px;
+      color: var(--muted);
+      border:1px solid var(--line);
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.02);
+      white-space:nowrap;
+    }
+
+    .grid{ display:grid; gap:12px; }
+    @media (min-width: 760px){
+      .grid.two{ grid-template-columns: 1fr 1fr; }
+    }
+
+    label{ display:block; font-size:12px; color: var(--muted); margin:10px 0 6px; }
+    input, textarea, select{
+      width:100%;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      padding:10px 12px;
+      outline:none;
+    }
+    textarea{ min-height:100px; resize:vertical; }
+    input:focus, textarea:focus, select:focus{
+      border-color: rgba(106,168,255,.55);
+      box-shadow: 0 0 0 3px rgba(106,168,255,.14);
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .row > *{ flex: 1 1 auto; }
+    .row .tight{ flex: 0 0 auto; }
+
+    button{
+      border:1px solid var(--line);
+      background: var(--btn2);
+      color: var(--text);
+      padding:12px 14px; /* lidt større til mobil */
+      border-radius:12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    button.primary{
+      background: rgba(106,168,255,.18);
+      border-color: rgba(106,168,255,.45);
+    }
+    button.danger{
+      background: rgba(255,106,106,.16);
+      border-color: rgba(255,106,106,.45);
+    }
+    button:disabled{ opacity:.45; cursor:not-allowed; }
+
+    .divider{ height:1px; background: var(--line); margin:14px 0; }
+
+    .list{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+    .playerItem{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background: rgba(255,255,255,.02);
+    }
+    .playerItem .name{ font-weight:900; }
+    .playerItem .meta{ font-size:12px; color: var(--muter); }
+
+    .center{ text-align:center; }
+    .bigName{ font-size:28px; font-weight:950; margin:6px 0; }
+    .box{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      background: rgba(255,255,255,.02);
+      line-height:1.35;
+    }
+    .subtle{ color: var(--muted); font-size:12px; }
+
+    .notice{
+      margin-top:12px;
+      border:1px dashed var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      color: var(--muted);
+      background: rgba(0,0,0,.10);
+      min-height: 42px;
+    }
+
+    .checkRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background: rgba(255,255,255,.02);
+      margin-top:10px;
+    }
+    .checkRow input{ width:auto; transform: scale(1.1); }
+    .roleHint{ font-size:12px; color: var(--muter); line-height:1.35; }
+
+    .dangerText{ color: rgba(255,106,106,.90); font-weight:900; }
+    .accentText{ color: rgba(106,168,255,.90); font-weight:900; }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="card">
+
+      <header>
+        <div class="title">Out Of Context</div>
+        <div class="pill" id="statusPill">Setup</div>
+      </header>
+
+      <!-- SETUP -->
+      <section id="screenSetup">
+        <div class="grid two">
+          <div>
+            <label>Tilføj spiller</label>
+            <div class="row">
+              <input id="playerNameInput" placeholder="Navn..." autocomplete="off" />
+              <button class="primary tight" id="addPlayerBtn">Tilføj</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <label>Antal outsidere</label>
+            <select id="outsiderCountSelect"></select>
+
+            <div class="checkRow">
+              <input type="checkbox" id="includeSaboteur" />
+              <div>
+                <div style="font-weight:900;">Inkludér Sabotør</div>
+                <div class="roleHint">
+                  Sabotøren får insider-spørgsmålet, men ser hvem outsiderne er (efter “Vis mit spørgsmål”).
+                </div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="row" style="justify-content:space-between;">
+              <div style="font-weight:950;">Spillere</div>
+              <div class="pill" id="playerCountKbd">0</div>
+            </div>
+            <div class="list" id="playerList"></div>
+
+            <div class="row" style="margin-top:10px;">
+              <button class="danger" id="clearPlayersBtn" disabled>Ryd spillere</button>
+            </div>
+          </div>
+
+          <div>
+            <label>Insider spørgsmål</label>
+            <textarea id="insiderQ" placeholder="Spørgsmålet til insiders (og Sabotør)..."></textarea>
+
+            <label>Outsider spørgsmål</label>
+            <textarea id="outsiderQ" placeholder="Spørgsmålet til outsidere..."></textarea>
+
+            <div class="divider"></div>
+
+            <div class="row">
+              <button class="primary" id="startGameBtn" disabled>Start spil</button>
+              <button class="danger" id="resetAllBtn">Reset alt</button>
+            </div>
+
+            <div class="notice" id="setupNotice"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PASS -->
+      <section id="screenPass" style="display:none;">
+        <div class="center">
+          <div class="subtle">Næste spiller</div>
+          <div class="bigName" id="nextPlayerName">Spiller</div>
+
+          <div class="box">
+            Giv telefonen til <b><span id="nextPlayerNameInline"></span></b>.<br/>
+            Når du er klar, tryk <b>Vis mit spørgsmål</b>.
+          </div>
+
+          <div class="row" style="justify-content:center; margin-top:12px;">
+            <button class="primary tight" id="revealBtn">Vis mit spørgsmål</button>
+            <button class="tight" id="backToSetupBtn">Til setup</button>
+          </div>
+
+          <div class="notice" id="passNotice"></div>
+        </div>
+      </section>
+
+      <!-- TURN -->
+      <section id="screenTurn" style="display:none;">
+        <div class="center">
+          <div class="subtle">Din tur</div>
+          <div class="bigName" id="turnPlayerName">Spiller</div>
+        </div>
+
+        <div class="box" style="margin-top:10px;">
+          <div class="subtle" style="margin-bottom:6px;">Dit spørgsmål</div>
+          <div id="turnQuestion" style="font-weight:950;"></div>
+
+          <div id="roleInfo" style="margin-top:10px; display:none;">
+            <div class="divider" style="margin:10px 0;"></div>
+            <div id="roleInfoText" class="roleHint"></div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px;">
+          <button class="primary" id="nextBtn">Næste spiller</button>
+        </div>
+
+        <div class="notice" id="turnNotice"></div>
+      </section>
+
+      <!-- END -->
+      <section id="screenEnd" style="display:none;">
+        <div class="center">
+          <div class="bigName" style="font-size:24px;">Færdig</div>
+          <div class="subtle">Enheden skal leveres tilbage til hosten.</div>
+
+          <div class="box" style="margin-top:12px;">
+            Aflever telefonen til hosten nu.
+          </div>
+
+          <div class="row" style="justify-content:center; margin-top:12px;">
+            <button class="primary tight" id="playAgainBtn">Start forfra (behold spillere)</button>
+            <button class="danger tight" id="fullResetBtn">Reset alt</button>
+          </div>
+
+          <div class="notice" id="endNotice"></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      players: [],
+      outsiderCount: 1,
+      includeSaboteur: false,
+
+      insiderQuestion: "",
+      outsiderQuestion: "",
+
+      outsiders: new Set(),
+      saboteurIndex: null,
+
+      currentIndex: 0
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(text){
+      const el = $("statusPill");
+      if (el) el.textContent = text;
+    }
+
+    function showScreen(which){
+      const screens = ["screenSetup", "screenPass", "screenTurn", "screenEnd"];
+      for (const s of screens) $(s).style.display = (s === which) ? "" : "none";
+
+      if (which === "screenSetup") setStatus("Setup");
+      if (which === "screenPass")  setStatus("Pass");
+      if (which === "screenTurn")  setStatus("Tur");
+      if (which === "screenEnd")   setStatus("Færdig");
+    }
+
+    function sanitizeName(name){
+      return (name || "").trim().replace(/\s+/g, " ");
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function notice(id, msg){
+      const el = $(id);
+      if (!el) return;
+      el.textContent = msg || "";
+    }
+
+    function rebuildPlayerList(){
+      const list = $("playerList");
+      list.innerHTML = "";
+
+      state.players.forEach((name, idx) => {
+        const item = document.createElement("div");
+        item.className = "playerItem";
+        item.innerHTML = `
+          <div>
+            <div class="name">${escapeHtml(name)}</div>
+            <div class="meta">Rækkefølge: ${idx + 1}</div>
+          </div>
+          <button class="danger tight" data-idx="${idx}" style="padding:8px 10px;">Fjern</button>
+        `;
+        list.appendChild(item);
+      });
+
+      list.querySelectorAll("button[data-idx]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const i = Number(btn.getAttribute("data-idx"));
+          state.players.splice(i, 1);
+          rebuildPlayerList();
+          rebuildOutsiderSelect();
+          validateSetup();
+        });
+      });
+
+      $("playerCountKbd").textContent = String(state.players.length);
+      $("clearPlayersBtn").disabled = state.players.length === 0;
+    }
+
+    function rebuildOutsiderSelect(){
+      const sel = $("outsiderCountSelect");
+      const n = state.players.length;
+      sel.innerHTML = "";
+
+      const max = Math.max(1, n - 1);
+      for (let i = 1; i <= max; i++){
+        const opt = document.createElement("option");
+        opt.value = String(i);
+        opt.textContent = String(i);
+        sel.appendChild(opt);
+      }
+
+      const desired = Math.min(state.outsiderCount, max);
+      state.outsiderCount = desired;
+      sel.value = String(desired);
+    }
+
+    function validateSetup(){
+      state.insiderQuestion = $("insiderQ").value.trim();
+      state.outsiderQuestion = $("outsiderQ").value.trim();
+      state.outsiderCount = Number($("outsiderCountSelect").value || 1);
+      state.includeSaboteur = $("includeSaboteur").checked;
+
+      const enoughPlayers = state.players.length >= 3;
+      const questionsOk = state.insiderQuestion.length > 0 && state.outsiderQuestion.length > 0;
+
+      const rolesOk = state.includeSaboteur
+        ? (state.outsiderCount >= 1 && (state.outsiderCount + 1) < state.players.length)
+        : (state.outsiderCount >= 1 && state.outsiderCount < state.players.length);
+
+      $("startGameBtn").disabled = !(enoughPlayers && questionsOk && rolesOk);
+
+      if (!enoughPlayers) return notice("setupNotice", "Tilføj mindst 3 spillere.");
+      if (!questionsOk)  return notice("setupNotice", "Udfyld begge spørgsmål.");
+      if (!rolesOk){
+        if (state.includeSaboteur){
+          return notice("setupNotice", "Med Sabotør: Outsidere + 1 skal være mindre end antal spillere.");
+        }
+        return notice("setupNotice", "Antal outsidere skal være mindre end antal spillere.");
+      }
+
+      notice("setupNotice", "Klar til at starte.");
+    }
+
+    function pickRandomSet(count, total){
+      const indices = Array.from({length: total}, (_, i) => i);
+      for (let i = indices.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+      return new Set(indices.slice(0, count));
+    }
+
+    function pickRandomOneExcluding(total, excludedSet){
+      const pool = [];
+      for (let i = 0; i < total; i++){
+        if (!excludedSet.has(i)) pool.push(i);
+      }
+      if (pool.length === 0) return null;
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function currentPlayerName(){ return state.players[state.currentIndex]; }
+
+    function currentRole(){
+      if (state.saboteurIndex === state.currentIndex) return "SABOTØR";
+      if (state.outsiders.has(state.currentIndex)) return "OUTSIDER";
+      return "INSIDER";
+    }
+
+    function currentQuestion(){
+      return (currentRole() === "OUTSIDER") ? state.outsiderQuestion : state.insiderQuestion;
+    }
+
+    function outsiderNames(){
+      const names = [];
+      for (const idx of state.outsiders){
+        names.push(state.players[idx]);
+      }
+      return names;
+    }
+
+    function startGame(){
+      validateSetup();
+      notice("setupNotice", "");
+
+      state.currentIndex = 0;
+
+      state.outsiders = pickRandomSet(state.outsiderCount, state.players.length);
+      state.saboteurIndex = state.includeSaboteur
+        ? pickRandomOneExcluding(state.players.length, state.outsiders)
+        : null;
+
+      renderPassScreen();
+      showScreen("screenPass");
+      notice("passNotice", "Skærmen viser kun navn, indtil du trykker “Vis mit spørgsmål”.");
+    }
+
+    function renderPassScreen(){
+      const name = currentPlayerName();
+      $("nextPlayerName").textContent = name;
+      $("nextPlayerNameInline").textContent = name;
+    }
+
+    function revealTurn(){
+      $("turnPlayerName").textContent = currentPlayerName();
+      $("turnQuestion").textContent = currentQuestion();
+
+      const role = currentRole();
+      const roleInfo = $("roleInfo");
+      const roleInfoText = $("roleInfoText");
+
+      if (role === "SABOTØR"){
+        const outs = outsiderNames();
+        roleInfo.style.display = "";
+        roleInfoText.innerHTML = `
+          <div class="accentText">Du er Sabotør.</div>
+          <div style="margin-top:6px;">
+            Outsidere er: <span class="dangerText">${escapeHtml(outs.join(", ") || "(ingen)")}</span>
+          </div>
+        `;
+      } else {
+        roleInfo.style.display = "none";
+        roleInfoText.textContent = "";
+      }
+
+      showScreen("screenTurn");
+      notice("turnNotice", "Tænk på dit svar. Når du er færdig, tryk “Næste spiller”.");
+    }
+
+    function nextPlayer(){
+      state.currentIndex++;
+
+      if (state.currentIndex >= state.players.length){
+        showScreen("screenEnd");
+        notice("endNotice", "Aflever telefonen til hosten.");
+        return;
+      }
+
+      renderPassScreen();
+      showScreen("screenPass");
+      notice("passNotice", "Giv telefonen videre. Næste spiller trykker “Vis mit spørgsmål”.");
+    }
+
+    function playAgainKeepPlayers(){
+      state.outsiders = new Set();
+      state.saboteurIndex = null;
+      state.currentIndex = 0;
+
+      $("insiderQ").value = "";
+      $("outsiderQ").value = "";
+
+      rebuildOutsiderSelect();
+      validateSetup();
+      showScreen("screenSetup");
+      notice("setupNotice", "Indtast nye spørgsmål og start igen.");
+    }
+
+    function fullReset(){
+      state.players = [];
+      state.outsiders = new Set();
+      state.saboteurIndex = null;
+      state.currentIndex = 0;
+      state.outsiderCount = 1;
+
+      $("playerNameInput").value = "";
+      $("insiderQ").value = "";
+      $("outsiderQ").value = "";
+      $("includeSaboteur").checked = false;
+
+      rebuildPlayerList();
+      rebuildOutsiderSelect();
+      validateSetup();
+      showScreen("screenSetup");
+      notice("setupNotice", "Alt er nulstillet.");
+    }
+
+    function addPlayer(){
+      const name = sanitizeName($("playerNameInput").value);
+      if (!name) return;
+
+      state.players.push(name);
+      $("playerNameInput").value = "";
+      $("playerNameInput").focus();
+
+      rebuildPlayerList();
+      rebuildOutsiderSelect();
+      validateSetup();
+    }
+
+    // Event wiring
+    $("addPlayerBtn").addEventListener("click", addPlayer);
+    $("playerNameInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") addPlayer();
+    });
+
+    $("insiderQ").addEventListener("input", validateSetup);
+    $("outsiderQ").addEventListener("input", validateSetup);
+    $("outsiderCountSelect").addEventListener("change", validateSetup);
+    $("includeSaboteur").addEventListener("change", validateSetup);
+
+    $("startGameBtn").addEventListener("click", startGame);
+
+    $("revealBtn").addEventListener("click", revealTurn);
+    $("nextBtn").addEventListener("click", nextPlayer);
+
+    $("backToSetupBtn").addEventListener("click", () => {
+      state.outsiders = new Set();
+      state.saboteurIndex = null;
+      state.currentIndex = 0;
+
+      showScreen("screenSetup");
+      validateSetup();
+      notice("setupNotice", "Tilbage til setup. Spilprogress er ryddet.");
+    });
+
+    $("clearPlayersBtn").addEventListener("click", () => {
+      state.players = [];
+      rebuildPlayerList();
+      rebuildOutsiderSelect();
+      validateSetup();
+      notice("setupNotice", "Spillere ryddet.");
+    });
+
+    $("resetAllBtn").addEventListener("click", fullReset);
+    $("playAgainBtn").addEventListener("click", playAgainKeepPlayers);
+    $("fullResetBtn").addEventListener("click", fullReset);
+
+    // Init
+    rebuildPlayerList();
+    rebuildOutsiderSelect();
+    validateSetup();
+    showScreen("screenSetup");
+  </script>
+</body>
+</html>
